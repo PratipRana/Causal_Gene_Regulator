@@ -1,4 +1,6 @@
 *.gz
 .ipynb_checkpoints/
 *.csv
+*.tsv
+
 
