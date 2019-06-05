@@ -2,5 +2,8 @@
 .ipynb_checkpoints/
 *.csv
 *.tsv
-
+*.dat
+.~annotation.R
+ADgene
+PDgene
 
