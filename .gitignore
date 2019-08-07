@@ -7,4 +7,6 @@
 ADgene
 PDgene
 *.png
+*.pdf
+.Rhistory
 
