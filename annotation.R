@@ -3,9 +3,11 @@
 library(tidyverse)
 
 # read dE data
-res_tableOE <- read.csv("Mov10oe_DE_results.csv", row.names = 1)
+# res_tableOE <- read.csv("Mov10oe_DE_results.csv", row.names = 1)
+ res_tableOE <- read.csv("significant_protein.csv", row.names = 'name')
 
-res_tableOE_tb <- res_tableOE %>% rownames_to_column(var="gene") %>% as_tibble()
+ res_tableOE_tb <- res_tableOE %>% rownames_to_column(var="gene") %>% as_tibble()
+#res_tableOE_tb <- res_tableOE %>% rownames_to_column(var="gene") %>% as_tibble()
 
 ## Load libraries
 library(clusterProfiler)
@@ -42,7 +44,7 @@ annotations_orgDb <- annotations_orgDb[non_duplicates_idx, ]
 is.na(annotations_orgDb$ENSEMBL) %>%
   which() %>%
   length()
-write.csv(annotations_orgDb, file = "AD_gene_reported_anoted.csv")
+write.csv(annotations_orgDb, file = "gene_reported_anoted.csv")
 
 # Load the library
 library(EnsDb.Hsapiens.v75)
@@ -82,8 +84,9 @@ res_ids <- inner_join(res_tableOE_tb, annotations_edb, by=c("gene"="SYMBOL"))
 
 ## Create background dataset for hypergeometric testing using all genes tested for significance in the results                 
 allOE_genes <- as.character(res_ids$GENEID)
+
 ## Extract significant results
-sigOE <- dplyr::filter(res_ids, padj < 0.05)
+sigOE <- dplyr::filter(res_ids, KO_DMSO_PL_3A._vs_WT_DMSO_PL_1A._p.adj < 0.05)
 sigOE_genes <- as.character(sigOE$GENEID)
 
 ## Run GO enrichment analysis 
@@ -92,22 +95,23 @@ ego <- enrichGO(gene = sigOE_genes,
                 keyType = "ENSEMBL",
                 OrgDb = org.Hs.eg.db, 
                 ont = "BP", 
-                pAdjustMethod = "BH", 
-                qvalueCutoff = 0.05, 
+                pAdjustMethod = "none", 
+                pvalueCutoff=0.05,
+                qvalueCutoff= 0.5,
                 readable = TRUE)
 
 ## Output results from GO analysis to a table
 cluster_summary <- data.frame(ego)
-dotplot(ego, showCategory=50)
-emapplot(ego, showCategory = 50)
+dotplot(ego, showCategory=20)
+emapplot(ego, showCategory = 20)
 
 ## To color genes by log2 fold changes, we need to extract the log2 fold changes from our results table creating a named vector
-OE_foldchanges <- sigOE$log2FoldChange
+OE_foldchanges <- sigOE$KO_DMSO_PL_3A._vs_WT_DMSO_PL_1A._ratio
 names(OE_foldchanges) <- sigOE$gene
 ## Cnetplot details the genes associated with one or more terms - by default gives the top 5 significant terms (by padj)
 cnetplot(ego, 
          categorySize="pvalue", 
-         showCategory = 5, 
+         showCategory = 10, 
          foldChange=OE_foldchanges, 
          vertex.label.font=6)
 
