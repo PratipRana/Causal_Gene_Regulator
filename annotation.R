@@ -86,7 +86,7 @@ res_ids <- inner_join(res_tableOE_tb, annotations_edb, by=c("gene"="SYMBOL"))
 allOE_genes <- as.character(res_ids$GENEID)
 
 ## Extract significant results
-sigOE <- dplyr::filter(res_ids, KO_DMSO_PL_3A._vs_WT_DMSO_PL_1A._p.adj < 0.05)
+sigOE <- dplyr::filter(res_ids, KO_DMSO_PL_3A._vs_KO_PDZ1i_PL_4A._p.adj< 0.05)
 sigOE_genes <- as.character(sigOE$GENEID)
 
 ## Run GO enrichment analysis 
@@ -97,7 +97,7 @@ ego <- enrichGO(gene = sigOE_genes,
                 ont = "BP", 
                 pAdjustMethod = "none", 
                 pvalueCutoff=0.05,
-                qvalueCutoff= 0.5,
+                qvalueCutoff= 0.9,
                 readable = TRUE)
 
 ## Output results from GO analysis to a table
@@ -106,7 +106,7 @@ dotplot(ego, showCategory=20)
 emapplot(ego, showCategory = 20)
 
 ## To color genes by log2 fold changes, we need to extract the log2 fold changes from our results table creating a named vector
-OE_foldchanges <- sigOE$KO_DMSO_PL_3A._vs_WT_DMSO_PL_1A._ratio
+OE_foldchanges <- sigOE$KO_DMSO_PL_3A._vs_KO_PDZ1i_PL_4A._ratio
 names(OE_foldchanges) <- sigOE$gene
 ## Cnetplot details the genes associated with one or more terms - by default gives the top 5 significant terms (by padj)
 cnetplot(ego, 
@@ -115,13 +115,13 @@ cnetplot(ego,
          foldChange=OE_foldchanges, 
          vertex.label.font=6)
 
-## If some of the high fold changes are getting drowned out due to a large range, you could set a maximum fold change value
-OE_foldchanges <- ifelse(OE_foldchanges > 3, 3, OE_foldchanges)
-OE_foldchanges <- ifelse(OE_foldchanges < -3, -3, OE_foldchanges)
-
-cnetplot(ego, 
-         categorySize="pvalue", 
-         showCategory = 3, 
-         foldChange=OE_foldchanges, 
-         vertex.label.font=6)
+# ## If some of the high fold changes are getting drowned out due to a large range, you could set a maximum fold change value
+# OE_foldchanges <- ifelse(OE_foldchanges > 3, 3, OE_foldchanges)
+# OE_foldchanges <- ifelse(OE_foldchanges < -3, -3, OE_foldchanges)
+# 
+# cnetplot(ego, 
+#          categorySize="pvalue", 
+#          showCategory = 3, 
+#          foldChange=OE_foldchanges, 
+#          vertex.label.font=6)
 
